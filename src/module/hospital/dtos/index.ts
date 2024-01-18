@@ -1,0 +1,5 @@
+export * from './create.hospital.dto'
+export * from './update.hospital.dto'
+export * from './delete.hospital.dto'
+export * from './retrieve.hospital.dto'
+export * from './retrieve-by-id.hospital.dto'

@@ -1,0 +1,5 @@
+export * from './create.doctor.dto'
+export * from './update.doctor.dto'
+export * from './delete.doctor.dto'
+export * from './retrieve.doctor.dto'
+export * from './retrieve-by-id.doctor.dto'

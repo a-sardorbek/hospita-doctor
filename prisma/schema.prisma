@@ -1,0 +1,91 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  url        = env("DATABASE_URL")
+  provider   = "postgresql"
+  extensions = [pgcrypto]
+}
+
+enum HospitalType {
+  private
+  public
+
+  @@map("hospital_type")
+}
+
+enum EntityStatus {
+  active
+  inactive
+
+  @@map("entity_status")
+}
+
+model Patient {
+  id         String       @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid @id
+  fullName   String       @map("full_name") @db.VarChar(255)
+  phone      String?      @map("phone") @db.VarChar(15)
+  createdAt  DateTime     @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+  deletedAt  DateTime?    @map("deleted_at") @db.Timestamp(0)
+
+  patient  PatientsOnHospitalsAndDoctors[]
+
+  @@map("patient")
+}
+
+model Doctor {
+  id         String       @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid @id
+  fullName   String       @map("full_name") @db.VarChar(255)
+  contact    String?      @map("phone") @db.VarChar(255)
+  status     EntityStatus @map("status") @default(inactive)
+  profession String       @map("profession") @db.VarChar(255)
+  createdAt  DateTime     @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+  deletedAt  DateTime?    @map("deleted_at") @db.Timestamp(0)
+
+  hospital DoctorsOnHospitals[]
+  patient PatientsOnHospitalsAndDoctors[]
+
+  @@map("doctor")
+}
+
+model Hospital {
+  id          String       @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid  @id
+  title       String       @map("title") @db.VarChar(255)
+  description String       @map("description") @db.Text
+  address     String?      @map("address") @db.VarChar(255)
+  location    Json?        @map("location") @default("{}")
+  status      EntityStatus @map("status") @default(inactive)
+  type        HospitalType @map("type") @default(private)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+  deletedAt   DateTime?    @map("deleted_at") @db.Timestamp(0)
+
+  user DoctorsOnHospitals[]
+  patient PatientsOnHospitalsAndDoctors[]
+
+  @@map("hospital")
+}
+
+model DoctorsOnHospitals {
+  doctor      Doctor   @relation(fields: [doctorId], references: [id])
+  doctorId    String   @map("doctor_id") @db.Uuid
+  hospital    Hospital @relation(fields: [hospitalId], references: [id])
+  hospitalId  String   @map("hospital_id") @db.Uuid
+
+  @@id([doctorId, hospitalId])
+}
+
+model PatientsOnHospitalsAndDoctors {
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  patientId   String   @map("patient_id") @db.Uuid
+  doctor      Doctor   @relation(fields: [doctorId], references: [id])
+  doctorId    String   @map("doctor_id") @db.Uuid
+  hospital    Hospital @relation(fields: [hospitalId], references: [id])
+  hospitalId  String   @map("hospital_id") @db.Uuid
+
+  @@id([patientId, doctorId, hospitalId])
+}
